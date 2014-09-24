@@ -14,38 +14,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 class Main {
-
-    /* Here's the newly left-factored grammar I'm using
-    Stmts : Stmt Stmts'
-    Stmts': Stmts
-      | e
-      ;
-    Stmt : PRINT Expr
-      | VAR NAME EQUAL Expr
-      | NAME EQUAL Expr
-      | Expr
-      ;
-    Expr : Atom Expr'
-    Expr': PLUS Expr
-      | DASH Expr
-      | e
-      ;
-    Params : Expr Params*
-      | e
-      ;
-    Params* : COMMA Expr Params*
-      | e
-      ;
-    Atom : NUMBER
-      | NAME NAME'
-      ;
-    Name': LPAREN Params RPAREN
-      | e
-      ;
-     */
-
+static boolean debug = true;
     public static void main(String[] argv) {
         String[] args = cannedMain(argv);
+        String inputString = flattenStringArray(args);
+        if(debug) System.out.println("input string: "+inputString);
         String[] stringTokens = invokeLexer(args);
         Token[] tokens = tokenize(stringTokens);
     }
@@ -69,19 +42,24 @@ class Main {
         //then at '-' before is part of startloc, after is part of endloc
         //v[0] = (!-STARTLOC)
         //v[1] = (!-ENDLOC)
-        //each of the '-' splits are split at ',' after is the startloc/endloc
+        //each of the ',' splits are split at '-' after is the startloc/endloc
         //w1[0] = (!
         //w1[1] = STARTLOC)
         //w2[0] = (!
         //w2[1] = ENDLOC)
-
         for(String s:stringTokens){
             Token token = new Token();
             String[] nonterminal = s.split(":");
             token.setNonTerminal(nonterminal[0]);
             String[] value = nonterminal[1].split(" ");//TODO: check if this should be "\ "
             token.setValue(value[0]);
-
+            String[] intermediateStep = value[1].split(",");
+            String[] startLoc = intermediateStep[0].split("-");
+            startLoc[1] = startLoc[1].replaceAll("\\)","");
+            token.setStartLoc(Integer.parseInt(startLoc[1]));
+            String[] endLoc = intermediateStep[1].split("-");
+            endLoc[1] = endLoc[1].replaceAll("\\)","");
+            token.setEndLoc(Integer.parseInt(endLoc[1]));
         }
         return returnVar.toArray(new Token[returnVar.size()]);
     }
