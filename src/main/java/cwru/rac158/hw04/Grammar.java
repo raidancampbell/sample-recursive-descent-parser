@@ -8,6 +8,9 @@ package cwru.rac158.hw04;
  *
  * Parentheses currently not working.
  *
+ * If the consume failed, everything from the current definition must be regurgitated
+ *
+ * after a vomit you must return false if there's an epsilon transition
  */
 
 /* Here's the newly left-factored grammar I'm using
@@ -73,18 +76,27 @@ public class Grammar {
         //       | VAR NAME EQUAL Expr
         //       | NAME EQUAL Expr
         //       | Expr
-        if(consume(Token.NonTerminal.PRINT) && expr()){
-            if(Main.debug)System.out.println("stmt: print expr'");
-            return true;
-        } else if(consume(Token.NonTerminal.VAR) && consume(Token.NonTerminal.NAME)
-                && consume(Token.NonTerminal.EQUAL) && expr()){
-            if(Main.debug)System.out.println("Stmt: var name equal expr");
-            return true;
-        } else if(consume(Token.NonTerminal.NAME) && consume(Token.NonTerminal.EQUAL) && expr()){
-            if(Main.debug)System.out.println("Stmt: name equal expr");
-            return true;
-        }else
-        if(Main.debug)System.out.println("Stmt: expr");
+        if(consume(Token.NonTerminal.PRINT)){
+            if(expr()) return true;
+            vomit();//vomit PRINT back up
+        }
+        if(consume(Token.NonTerminal.VAR)){
+            if(consume(Token.NonTerminal.NAME)){
+                if(consume(Token.NonTerminal.EQUAL)){
+                    if(expr()) return true;
+                    vomit();//vomit EQUAL back up
+                }
+                vomit();//vomit NAME back up
+            }
+            vomit();//vomit VAR back up
+        }
+        if(consume(Token.NonTerminal.NAME)){
+            if(consume(Token.NonTerminal.EQUAL)){
+                if(expr()) return true;
+                vomit();//vomit EQUAL back up
+            }
+            vomit();//vomit NAME back up
+        }
         return expr();
     }
 
@@ -100,10 +112,14 @@ public class Grammar {
         //      | e
         if(consume(Token.NonTerminal.PLUS)){
             if(Main.debug)System.out.println("expr': plus expr");
-            return expr();
+            if(expr()) return true;
+            vomit();//vomit PLUS back up
+            return false;
         } else if(consume(Token.NonTerminal.DASH)){
             if(Main.debug)System.out.println("expr': dash expr");
-            return expr();
+            if(expr())return true;
+            vomit();//vomit DASH back up
+            return false;
         }
         if(Main.debug)System.out.println("expr: e");
         //empty set
@@ -122,7 +138,11 @@ public class Grammar {
     private static boolean params_(){
         //Params* : COMMA Expr Params*
         //        | e
-        if(consume(Token.NonTerminal.COMMA)&& expr() && params_()) return true;
+        if (consume(Token.NonTerminal.COMMA)) {
+            if (expr() && params_()) return true;
+            vomit();//vomit COMMA back up
+            return false;
+        }
         //empty
         if(Main.debug)System.out.println("params': e");
         return true;
@@ -135,13 +155,23 @@ public class Grammar {
             if(Main.debug)System.out.println("atom: number");
             return true;
         }
-        else return consume(Token.NonTerminal.NAME) && atom_();
+        if(consume(Token.NonTerminal.NAME)){
+            if(atom_()) return true;
+            vomit();
+        }
+        return false;
     }
 
     private static boolean atom_(){
         //Atom': LPAREN Params RPAREN
         //      | e
-        if(consume(Token.NonTerminal.LPAREN) && params() && consume(Token.NonTerminal.RPAREN)) return true;
+        if(consume(Token.NonTerminal.LPAREN)){
+            if(params()){
+                if(consume(Token.NonTerminal.RPAREN)) return true;
+            }
+            vomit();
+            return false;
+        }
         //empty
         if(Main.debug)System.out.println("atom_: e");
         return true;
@@ -149,14 +179,16 @@ public class Grammar {
 
     private static boolean consume(Token.NonTerminal nt){
         if(currentToken >= tokens.length){
-            if(Main.debug) System.err.println("currentToken: "+ currentToken+"\t\ttokens.length: "+tokens.length);
-            System.err.println("Expected: " +nt+", but ran off input");
-            //TODO: remove this section of the if, and replace with return false
+            return false;
         } else if( nt == tokens[currentToken].getEnumNonTerminal()){
             currentToken++;
             return true;
         }
         return false;
+    }
+
+    private static void vomit(){
+        currentToken--;
     }
 
 }

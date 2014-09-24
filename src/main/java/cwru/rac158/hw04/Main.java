@@ -24,6 +24,7 @@ static boolean debug = true;
             System.exit(4);
         }
         if(debug) System.out.println("input string: "+inputString);
+        if(debug) inputString = "f(x, +3)";
         String[] stringTokens = invokeLexer(inputString);
         Token[] tokens = tokenize(stringTokens);
         if(debug) for(Token t: tokens) System.out.println("TOKEN: "+t.toString());
@@ -35,9 +36,18 @@ static boolean debug = true;
         } else {
             System.out.println("no match");
         }
+
     }
 
-    static String readInput() throws IOException {
+    public static boolean testHarness(String inputString){
+        String[] stringTokens = invokeLexer(inputString);
+        Token[] tokens = tokenize(stringTokens);
+        Grammar g = new Grammar();
+        g.prepGrammar(tokens, inputString);
+        return g.evalGrammar();
+    }
+
+     private static String readInput() throws IOException {
         InputStreamReader stdin = new InputStreamReader(System.in);
         StringBuilder sb = new StringBuilder();
         char[] chars = new char[4096];
@@ -48,7 +58,7 @@ static boolean debug = true;
         return sb.toString();
     }
 
-    static int readChars(
+    private static int readChars(
             InputStreamReader stdin, StringBuilder sb, char[] chars)
             throws IOException {
         int read = stdin.read(chars);
@@ -97,7 +107,6 @@ static boolean debug = true;
             String[] startLoc = intermediateStep[0].split(",");
             String[] endLoc = intermediateStep[1].split(",");
             try {
-                System.out.println(endLoc[1]);
                 token.setStartLoc(Integer.parseInt(startLoc[1]) - 1);//-1 because lexer is 1-based, and we're 0-based
                 token.setEndLoc(Integer.parseInt(endLoc[1]) - 1);//-1 because lexer is 1-based, and we're 0-based
             } catch(NumberFormatException e){
