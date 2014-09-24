@@ -1,7 +1,6 @@
 package cwru.rac158.hw04;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.MissingOptionException;
@@ -48,13 +47,49 @@ class Main {
     public static void main(String[] argv) {
         String[] args = cannedMain(argv);
         String[] stringTokens = invokeLexer(args);
+        Token[] tokens = tokenize(stringTokens);
+    }
 
+    /**
+     * you give me the tokens in string form
+     * I parse them into a meaningful object, and return them
+     * @param stringTokens input token as a string
+     * @return output tokens in as meaningful data
+     */
+    private static Token[] tokenize(String[] stringTokens){
+        ArrayList<Token> returnVar = new ArrayList<Token>();
+        //t = NONTERMINAL:VALUE (!-STARTLOC),(!-ENDLOC)
+        //! == do not care(?)
+        //split first at ':' before is the nonterminal
+        //t[0] = NONTERMINAL
+        //t[1] = VALUE (!-STARTLOC),(!-ENDLOC)
+        //then at ' ' before is the value
+        //u[0] = VALUE
+        //u[1] = (!-STARTLOC),(!-ENDLOC)
+        //then at '-' before is part of startloc, after is part of endloc
+        //v[0] = (!-STARTLOC)
+        //v[1] = (!-ENDLOC)
+        //each of the '-' splits are split at ',' after is the startloc/endloc
+        //w1[0] = (!
+        //w1[1] = STARTLOC)
+        //w2[0] = (!
+        //w2[1] = ENDLOC)
+
+        for(String s:stringTokens){
+            Token token = new Token();
+            String[] nonterminal = s.split(":");
+            token.setNonTerminal(nonterminal[0]);
+            String[] value = nonterminal[1].split(" ");//TODO: check if this should be "\ "
+            token.setValue(value[0]);
+
+        }
+        return returnVar.toArray(new Token[returnVar.size()]);
     }
 
     private static String[] invokeLexer(String[] inputString) {
         Runtime rt = Runtime.getRuntime();
         ArrayList<String> returnVar = new ArrayList<String>();
-        String toLex = condenseString(inputString);
+        String toLex = flattenStringArray(inputString);
 
         try {
             Process pr = rt.exec(new String[]{"./hw04-lex",toLex});//run the command
@@ -77,7 +112,7 @@ class Main {
      * @param toCondense string array to condense
      * @return single string object
      */
-    private static String condenseString(String[] toCondense){
+    private static String flattenStringArray(String[] toCondense){
         StringBuilder returnVar = new StringBuilder();
         for(int i = 0; i<toCondense.length; i++){
             returnVar.append(toCondense[i]);
