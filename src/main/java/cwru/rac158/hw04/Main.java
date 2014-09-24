@@ -10,6 +10,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 class Main {
 
     /* Here's the newly left-factored grammar I'm using
@@ -43,7 +47,43 @@ class Main {
 
     public static void main(String[] argv) {
         String[] args = cannedMain(argv);
+        String[] stringTokens = invokeLexer(args);
 
+    }
+
+    private static String[] invokeLexer(String[] inputString) {
+        Runtime rt = Runtime.getRuntime();
+        ArrayList<String> returnVar = new ArrayList<String>();
+        String toLex = condenseString(inputString);
+
+        try {
+            Process pr = rt.exec(new String[]{"./hw04-lex",toLex});//run the command
+            BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
+            String line;//little helper variable
+            while ((line = input.readLine()) != null) {
+                returnVar.add(line);//build the array of the output
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(2);
+        }
+        return returnVar.toArray(new String[returnVar.size()]);
+    }
+
+    /**
+     * give me a string array
+     * I give you a '\n' delimited string
+     * @param toCondense string array to condense
+     * @return single string object
+     */
+    private static String condenseString(String[] toCondense){
+        StringBuilder returnVar = new StringBuilder();
+        for(int i = 0; i<toCondense.length; i++){
+            returnVar.append(toCondense[i]);
+            if(i + 1 < toCondense.length) returnVar.append('\n');
+        }
+        return returnVar.toString();
     }
 
 
