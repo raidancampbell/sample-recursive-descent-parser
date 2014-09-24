@@ -24,8 +24,11 @@ public class Token {
         return nonTerminal;
     }
 
-    public void setNonTerminal(String nonTerminal) {
-        this.nonTerminal = nonTerminal;
+    public void setNonTerminal(String givennonTerminal) {
+        givennonTerminal = givennonTerminal.trim();
+        givennonTerminal = givennonTerminal.replaceAll("\\)","");
+        givennonTerminal = givennonTerminal.replaceAll("\\(","");
+        this.nonTerminal = givennonTerminal;
     }
 
     public String getValue() {
@@ -57,25 +60,25 @@ public class Token {
         //huh. this must be compiled with Java6, because
         //Java7 allows strings in switch statements.  I tried, but
         //the IDE wasn't happy.
-        if(value.equals("PRINT")){
+        if(nonTerminal.equals("PRINT")){
             enumNonTerminal = NonTerminal.PRINT;
-        } else if(value.equals("NAME")){
+        } else if(nonTerminal.equals("NAME")){
             enumNonTerminal = NonTerminal.NAME;
-        } else if(value.equals("VAR")){
+        } else if(nonTerminal.equals("VAR")){
             enumNonTerminal = NonTerminal.VAR;
-        } else if(value.equals("EQUAL")){
+        } else if(nonTerminal.equals("EQUAL")){
             enumNonTerminal = NonTerminal.EQUAL;
-        } else if(value.equals("NUMBER")){
+        } else if(nonTerminal.equals("NUMBER")){
             enumNonTerminal = NonTerminal.NUMBER;
-        } else if(value.equals("PLUS")){
+        } else if(nonTerminal.equals("PLUS")){
             enumNonTerminal = NonTerminal.PLUS;
-        } else if(value.equals("DASH")){
+        } else if(nonTerminal.equals("DASH")){
             enumNonTerminal = NonTerminal.DASH;
-        } else if(value.equals("COMMA")){
+        } else if(nonTerminal.equals("COMMA")){
             enumNonTerminal = NonTerminal.COMMA;
-        } else if(value.equals("LPAREN")){
+        } else if(nonTerminal.equals("LPAREN")){
             enumNonTerminal = NonTerminal.LPAREN;
-        } else if(value.equals("RPAREN")){
+        } else if(nonTerminal.equals("RPAREN")){
             enumNonTerminal = NonTerminal.RPAREN;
         } else {
             System.err.println("ERR: expected valid nonterminal, received: "+value);

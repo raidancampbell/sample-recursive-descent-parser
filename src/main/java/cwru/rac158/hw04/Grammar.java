@@ -1,8 +1,13 @@
 package cwru.rac158.hw04;
 
 /**
- * Created by student on 9/24/14.
- * System.exit(1) indicates running off of input while parsing
+ * Created by R. Aidan Campbell on 9/24/14.
+ *
+ * Notes:
+ * A symbol should only be consumed once a keyword (represented in caps) is hit.
+ *
+ * Parentheses currently not working.
+ *
  */
 
 /* Here's the newly left-factored grammar I'm using
@@ -44,16 +49,23 @@ public class Grammar {
 
     private static boolean stmts(){
         //Stmts : Stmt Stmts'
-        if(stmt() && stmts_()) return true;
+        if(stmt() && stmts_()) {
+            if(Main.debug)System.out.println("Stmts: Stmt Stmts'");
+            return true;
+        }
         return false;
     }
 
     private static boolean stmts_(){
         //Stmts': Stmts
         //      | e
-        if(stmts()) return true;
+        if(stmts()){
+            if(Main.debug)System.out.println("Stmts': Stmts'");
+            return true;
+        }
         //empty
-        return false;
+        if(Main.debug)System.out.println("Stmts': e'");
+        return true;
     }
 
     private static boolean stmt(){
@@ -61,14 +73,19 @@ public class Grammar {
         //       | VAR NAME EQUAL Expr
         //       | NAME EQUAL Expr
         //       | Expr
-        if(consume(Token.NonTerminal.PRINT)){
+        if(consume(Token.NonTerminal.PRINT) && expr()){
+            if(Main.debug)System.out.println("stmt: print expr'");
             return true;
-        } else if(consume(Token.NonTerminal.VAR)){
+        } else if(consume(Token.NonTerminal.VAR) && consume(Token.NonTerminal.NAME)
+                && consume(Token.NonTerminal.EQUAL) && expr()){
+            if(Main.debug)System.out.println("Stmt: var name equal expr");
             return true;
-        } else if(consume(Token.NonTerminal.NAME)){
+        } else if(consume(Token.NonTerminal.NAME) && consume(Token.NonTerminal.EQUAL) && expr()){
+            if(Main.debug)System.out.println("Stmt: name equal expr");
             return true;
-        }else return expr();
-
+        }else
+        if(Main.debug)System.out.println("Stmt: expr");
+        return expr();
     }
 
     private static boolean expr(){
@@ -82,10 +99,13 @@ public class Grammar {
         //      | DASH Expr
         //      | e
         if(consume(Token.NonTerminal.PLUS)){
-            return true;
+            if(Main.debug)System.out.println("expr': plus expr");
+            return expr();
         } else if(consume(Token.NonTerminal.DASH)){
-            return true;
+            if(Main.debug)System.out.println("expr': dash expr");
+            return expr();
         }
+        if(Main.debug)System.out.println("expr: e");
         //empty set
         return true;
     }
@@ -95,6 +115,7 @@ public class Grammar {
         //       | e
         if(expr() && params_()) return true;
         //empty
+        if(Main.debug)System.out.println("params: e");
         return true;
     }
 
@@ -103,13 +124,17 @@ public class Grammar {
         //        | e
         if(consume(Token.NonTerminal.COMMA)&& expr() && params_()) return true;
         //empty
+        if(Main.debug)System.out.println("params': e");
         return true;
     }
 
     private static boolean atom(){
         //Atom : NUMBER
         //     | NAME Atom'
-        if(consume(Token.NonTerminal.NUMBER)) return true;
+        if(consume(Token.NonTerminal.NUMBER)){
+            if(Main.debug)System.out.println("atom: number");
+            return true;
+        }
         else return consume(Token.NonTerminal.NAME) && atom_();
     }
 
@@ -118,15 +143,16 @@ public class Grammar {
         //      | e
         if(consume(Token.NonTerminal.LPAREN) && params() && consume(Token.NonTerminal.RPAREN)) return true;
         //empty
+        if(Main.debug)System.out.println("atom_: e");
         return true;
     }
 
     private static boolean consume(Token.NonTerminal nt){
         if(currentToken >= tokens.length){
+            if(Main.debug) System.err.println("currentToken: "+ currentToken+"\t\ttokens.length: "+tokens.length);
             System.err.println("Expected: " +nt+", but ran off input");
-            System.exit(1);
-        }
-        if( nt == tokens[currentToken].getEnumNonTerminal()){
+            //TODO: remove this section of the if, and replace with return false
+        } else if( nt == tokens[currentToken].getEnumNonTerminal()){
             currentToken++;
             return true;
         }

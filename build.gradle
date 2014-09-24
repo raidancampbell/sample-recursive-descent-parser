@@ -30,4 +30,3 @@ test {
         exceptionFormat "full" // default is "short"
     }
 }
-
