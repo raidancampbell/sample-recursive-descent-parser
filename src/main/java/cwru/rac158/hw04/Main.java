@@ -12,28 +12,53 @@ import org.apache.commons.cli.UnrecognizedOptionException;
 
 class Main {
 
+    /* Here's the newly left-factored grammar I'm using
+    Stmts : Stmt Stmts'
+    Stmts': Stmts
+      | e
+      ;
+    Stmt : PRINT Expr
+      | VAR NAME EQUAL Expr
+      | NAME EQUAL Expr
+      | Expr
+      ;
+    Expr : Atom Expr'
+    Expr': PLUS Expr
+      | DASH Expr
+      | e
+      ;
+    Params : Expr Params*
+      | e
+      ;
+    Params* : COMMA Expr Params*
+      | e
+      ;
+    Atom : NUMBER
+      | NAME NAME'
+      ;
+    Name': LPAREN Params RPAREN
+      | e
+      ;
+     */
 
     public static void main(String[] argv) {
+        String[] args = cannedMain(argv);
 
+    }
+
+
+    private static String[] cannedMain(String[] argv) {
         final Option helpOpt = new Option("h", "help", false, "Print this message");
         final Option exampleArgOpt = new Option("a", "arg-example", true, "Example option which accepts and argument");
         final Options options = new Options();
-
         options.addOption(helpOpt);
         options.addOption(exampleArgOpt);
 
-        String exampleArg = "";
         String[] args = null;
 
         try {
             GnuParser parser = new GnuParser();
             CommandLine line = parser.parse(options, argv);
-
-            if (line.hasOption(helpOpt.getLongOpt())) {
-                Usage(options);
-            }
-
-            exampleArg = line.getOptionValue(exampleArgOpt.getLongOpt());
             args = line.getArgs();
 
         } catch (final MissingOptionException e) {
@@ -46,14 +71,8 @@ class Main {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+        return args;
 
-        System.out.print("extra args ");
-        for (String arg : args) {
-            System.out.print(arg + " ");
-        }
-        System.out.println();
-        System.out.println("arg-example = " + exampleArg);
-        System.out.println("Put your logic here");
     }
 
     public static void Usage(Options options) {
