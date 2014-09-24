@@ -1,17 +1,10 @@
 package cwru.rac158.hw04;
-
+/*
+hopefully everything in here is self explanatory
+ */
 
 import static org.junit.Assert.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 import org.junit.Test;
-import org.junit.Ignore;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import cwru.rac158.hw04.Main;
 
 
 public class test_Main {
@@ -42,15 +35,12 @@ public class test_Main {
         assertFalse(Main.testHarness("print print"));
         assertFalse(Main.testHarness("x = print y"));
         assertFalse(Main.testHarness("f(x, +3)"));
-        assertFalse(Main.testHarness(""));
-        assertFalse(Main.testHarness(""));
     }
 
     @Test
     public void test_grammar_abuse(){
-        assertFalse(Main.testHarness(""));
-        assertFalse(Main.testHarness(""));
-        assertFalse(Main.testHarness(""));
+        assertFalse(Main.testHarness("?"));
+        assertFalse(Main.testHarness("!!!"));
         assertFalse(Main.testHarness(""));
     }
 }

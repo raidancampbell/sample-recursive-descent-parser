@@ -3,14 +3,12 @@ package cwru.rac158.hw04;
 /**
  * Created by R. Aidan Campbell on 9/24/14.
  *
- * Notes:
- * A symbol should only be consumed once a keyword (represented in caps) is hit.
+ * Here's where the language is defined, and recursively evaluated
+ * each method has its production commented with it, for easy(ier) reading
  *
- * Parentheses currently not working.
- *
- * If the consume failed, everything from the current definition must be regurgitated
- *
- * after a vomit you must return false if there's an epsilon transition
+ * Subtle issues I encountered:
+ * If the consume failed, everything consumed from the current definition must be vomited
+ * after a vomit you must return false if there's an epsilon transition in the definition
  */
 
 /* Here's the newly left-factored grammar I'm using
@@ -46,31 +44,40 @@ public class Grammar {
         currentToken = 0;
     }
 
+    //Complexity: 1
     public static boolean evalGrammar(){
-        return stmts();
+        if(stmts())
+        {//if there was a successful return,
+            //make sure everything was consumed
+            //so that it didn't just epsilon out
+            return currentToken == tokens.length;
+        }
+        return false;
     }
 
+    //Complexity: 1
     private static boolean stmts(){
         //Stmts : Stmt Stmts'
         if(stmt() && stmts_()) {
-            if(Main.debug)System.out.println("Stmts: Stmt Stmts'");
             return true;
         }
         return false;
     }
 
+    //Complexity: 1
     private static boolean stmts_(){
         //Stmts': Stmts
         //      | e
         if(stmts()){
-            if(Main.debug)System.out.println("Stmts': Stmts'");
             return true;
         }
         //empty
-        if(Main.debug)System.out.println("Stmts': e'");
         return true;
     }
 
+    //Complexity: 9
+    //but I hope the comments make it
+    //easier to swallow
     private static boolean stmt(){
         //Stmt : PRINT Expr
         //       | VAR NAME EQUAL Expr
@@ -100,38 +107,37 @@ public class Grammar {
         return expr();
     }
 
+    //Complexity: 1
     private static boolean expr(){
         //Expr : Atom Expr'
         return atom() && expr_();
 
     }
 
+    //complexity: 4
     private static boolean expr_(){
         //Expr': PLUS Expr
         //      | DASH Expr
         //      | e
         if(consume(Token.NonTerminal.PLUS)){
-            if(Main.debug)System.out.println("expr': plus expr");
             if(expr()) return true;
             vomit();//vomit PLUS back up
             return false;
         } else if(consume(Token.NonTerminal.DASH)){
-            if(Main.debug)System.out.println("expr': dash expr");
             if(expr())return true;
             vomit();//vomit DASH back up
             return false;
         }
-        if(Main.debug)System.out.println("expr: e");
         //empty set
         return true;
     }
 
+    //Complexity: 2
     private static boolean params(){
         //Params : Expr Params*
         //       | e
         if(expr() && params_()) return true;
         //empty
-        if(Main.debug)System.out.println("params: e");
         return true;
     }
 
@@ -144,15 +150,14 @@ public class Grammar {
             return false;
         }
         //empty
-        if(Main.debug)System.out.println("params': e");
         return true;
     }
 
+    //Complexity: 3
     private static boolean atom(){
         //Atom : NUMBER
         //     | NAME Atom'
         if(consume(Token.NonTerminal.NUMBER)){
-            if(Main.debug)System.out.println("atom: number");
             return true;
         }
         if(consume(Token.NonTerminal.NAME)){
@@ -162,6 +167,7 @@ public class Grammar {
         return false;
     }
 
+    //Complexity: 3
     private static boolean atom_(){
         //Atom': LPAREN Params RPAREN
         //      | e
@@ -173,10 +179,16 @@ public class Grammar {
             return false;
         }
         //empty
-        if(Main.debug)System.out.println("atom_: e");
         return true;
     }
 
+    /**
+     * moves the token we're focusing on forward
+     * @param nt expected token for successful consumption
+     * @return whether consumption was successful
+     *
+     * complexity: 2
+     */
     private static boolean consume(Token.NonTerminal nt){
         if(currentToken >= tokens.length){
             return false;
@@ -187,8 +199,11 @@ public class Grammar {
         return false;
     }
 
+    /**
+     * we consumed something we shouldn't have
+     * so we unconsume it.
+     */
     private static void vomit(){
         currentToken--;
     }
-
-}
+}//end of class
