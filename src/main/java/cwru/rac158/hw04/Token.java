@@ -16,6 +16,10 @@ public class Token {
         ATOM, PLUS, DASH, COMMA, LPAREN, RPAREN, NUMBER
     }
 
+    public NonTerminal getEnumNonTerminal(){
+        return enumNonTerminal;
+    }
+
     public String getNonTerminal() {
         return nonTerminal;
     }

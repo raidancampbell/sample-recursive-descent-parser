@@ -1,4 +1,6 @@
 package cwru.rac158.hw04;
+//System.exit(2) indicates an error while invoking the lexer
+//System.exit(3) indicates a bad string given (should probs throw, not exit)
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -18,9 +20,15 @@ static boolean debug = true;
     public static void main(String[] argv) {
         String[] args = cannedMain(argv);
         String inputString = flattenStringArray(args);
+        if(debug) inputString = "var x = 0";
         if(debug) System.out.println("input string: "+inputString);
         String[] stringTokens = invokeLexer(args);
         Token[] tokens = tokenize(stringTokens);
+        if(Grammar.evalGrammar()){
+            System.out.println("match");
+        } else{
+            System.out.println("no match");
+        }
     }
 
     /**
@@ -49,17 +57,24 @@ static boolean debug = true;
         //w2[1] = ENDLOC)
         for(String s:stringTokens){
             Token token = new Token();
+            if(s.indexOf(":") == -1){
+                System.err.println("Bad input text given. No match.");
+                System.exit(3);
+            }
             String[] nonterminal = s.split(":");
             token.setNonTerminal(nonterminal[0]);
             String[] value = nonterminal[1].split(" ");//TODO: check if this should be "\ "
             token.setValue(value[0]);
             String[] intermediateStep = value[1].split(",");
+            intermediateStep[0] = intermediateStep[0].replaceAll("\\)","");//easier int parsing
             String[] startLoc = intermediateStep[0].split("-");
-            startLoc[1] = startLoc[1].replaceAll("\\)","");
-            token.setStartLoc(Integer.parseInt(startLoc[1]));
-            String[] endLoc = intermediateStep[1].split("-");
-            endLoc[1] = endLoc[1].replaceAll("\\)","");
-            token.setEndLoc(Integer.parseInt(endLoc[1]));
+            try {
+                token.setStartLoc(Integer.parseInt(startLoc[1]) - 1);//-1 because lexer is 1-based, and we're 0-based
+                String[] endLoc = intermediateStep[1].split("-");
+                token.setEndLoc(Integer.parseInt(endLoc[1]) - 1);//-1 because lexer is 1-based, and we're 0-based
+            } catch(NumberFormatException e){
+                System.err.println("Malformed number from lexer.");
+            }
         }
         return returnVar.toArray(new Token[returnVar.size()]);
     }
